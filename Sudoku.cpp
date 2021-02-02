@@ -1,5 +1,4 @@
 #include <array>
-#include <cassert>
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -81,7 +80,27 @@ class SudokuBoard {
         return out;
     }
 
-    auto legal(int x, int num) {
+    auto get_num_at_position(int x) -> int {
+        return state[x / 9][x % 9];
+    }
+
+    auto current_state_invalid() -> bool {
+        int n;
+        for (int i = 0; i < 81; i++) {
+            n = state[i / 9][i % 9];
+            if (n) {
+                state[i / 9][i % 9] = 0;
+                if (!legal(i, n))
+                {
+                    return true;
+                }
+                state[i / 9][i % 9] = n;
+            }
+        }
+        return false;
+    }
+
+    auto legal(int x, int num) -> bool {
         auto v1 = rowview(x);
         auto v2 = colview(x);
         auto v3 = boxview(x);
@@ -122,9 +141,19 @@ class SudokuBoard {
 };
 
 auto main(int argc, char *argv[]) -> int {
+    if (argc <= 1)
+    {
+        std::cout << "no input string provided. exiting.";
+        return 0;
+    }
+    
     std::string in = std::string(argv[1]);
     SudokuBoard b = SudokuBoard(in);
     b.show();
+    if (b.current_state_invalid()) {
+        std::cout << "input string invalid. exiting.";
+        return 0;
+    }
     auto start = std::chrono::steady_clock::now();
     b.solve();
     std::cout << "solved in " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << "ms\n";
