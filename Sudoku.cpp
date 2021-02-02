@@ -90,8 +90,7 @@ class SudokuBoard {
             n = state[i / 9][i % 9];
             if (n) {
                 state[i / 9][i % 9] = 0;
-                if (!legal(i, n))
-                {
+                if (!legal(i, n)) {
                     return true;
                 }
                 state[i / 9][i % 9] = n;
@@ -141,12 +140,11 @@ class SudokuBoard {
 };
 
 auto main(int argc, char *argv[]) -> int {
-    if (argc <= 1)
-    {
+    if (argc <= 1) {
         std::cout << "no input string provided. exiting.";
         return 0;
     }
-    
+
     std::string in = std::string(argv[1]);
     SudokuBoard b = SudokuBoard(in);
     b.show();
