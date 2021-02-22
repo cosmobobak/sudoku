@@ -18,9 +18,9 @@ constexpr std::array<char, 10> symbols = {
 };
 
 class SudokuBoard {
-   public:
     std::array<std::array<int, 9>, 9> state = {0};
 
+   public:
     SudokuBoard(std::string &in) {
         int x = 0;
         for (char &c : in) {
@@ -100,20 +100,20 @@ class SudokuBoard {
     }
 
     auto legal(int x, int num) -> bool {
-        auto v1 = rowview(x);
-        auto v2 = colview(x);
-        auto v3 = boxview(x);
+        auto row = rowview(x);
+        auto col = colview(x);
+        auto box = boxview(x);
         return std::all_of(
-                   v1.begin(),
-                   v1.end(),
+                   row.begin(),
+                   row.end(),
                    [num](int n) { return n != num; }) &&
                std::all_of(
-                   v2.begin(),
-                   v2.end(),
+                   col.begin(),
+                   col.end(),
                    [num](int n) { return n != num; }) &&
                std::all_of(
-                   v3.begin(),
-                   v3.end(),
+                   box.begin(),
+                   box.end(),
                    [num](int n) { return n != num; });
     }
 
@@ -122,16 +122,11 @@ class SudokuBoard {
         // If there is no unassigned location, we are done
         if (x == 81)
             return true;  // success!
-        // consider digits 1 to 9
         for (int num = 1; num <= 9; num++) {
-            // if looks promising
             if (legal(x, num)) {
-                // make tentative assignment
                 state[x / 9][x % 9] = num;
-                // return, if success, yay!
                 if (solve())
                     return true;
-                // failure, unmake & try again
                 state[x / 9][x % 9] = UNASSIGNED;
             }
         }
