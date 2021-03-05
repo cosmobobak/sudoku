@@ -148,20 +148,20 @@ auto main(int argc, char *argv[]) -> int {
             valid_tokens.begin(),
             valid_tokens.end(),
             [c](char token){ return token == c; }); })) {
-        std::cout << "input string invalid. exiting.";
+        std::cout << "input string invalid (you may only use digits and dashes in your input). exiting.";
         return 0;
     }
     SudokuBoard b = SudokuBoard(in);
     std::cout << "\nYour sudoku:\n";
     b.show();
     if (b.current_state_invalid()) {
-        std::cout << "input sudoku invalid. exiting.";
+        std::cout << "input sudoku invalid (given problem has repeated digits in rows, columns, or squares). exiting.";
         return 0;
     }
     auto start = std::chrono::steady_clock::now();
     bool success = b.solve();
     if (!success) {
-        std::cout << "overconstrained (unsolvable) sudoku. exiting.";
+        std::cout << "overconstrained sudoku (there is no pattern of digits that can validly fill the given sudoku). exiting.";
         return 0;
     }
     auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
