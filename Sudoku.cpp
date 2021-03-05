@@ -139,17 +139,31 @@ auto main(int argc, char *argv[]) -> int {
         std::cout << "no input string provided. exiting.";
         return 0;
     }
-
+    std::array<char, 10> valid_tokens = {'1','2','3','4','5','6','7','8','9','-'};
     std::string in = std::string(argv[1]);
+    if (std::any_of(
+        in.begin(), 
+        in.end(), 
+        [valid_tokens](char c){ return std::none_of(
+            valid_tokens.begin(),
+            valid_tokens.end(),
+            [c](char token){ return token == c; }); })) {
+        std::cout << "input string invalid. exiting.";
+        return 0;
+    }
     SudokuBoard b = SudokuBoard(in);
     std::cout << "\nYour sudoku:\n";
     b.show();
     if (b.current_state_invalid()) {
-        std::cout << "input string invalid. exiting.";
+        std::cout << "input sudoku invalid. exiting.";
         return 0;
     }
     auto start = std::chrono::steady_clock::now();
-    b.solve();
+    bool success = b.solve();
+    if (!success) {
+        std::cout << "overconstrained (unsolvable) sudoku. exiting.";
+        return 0;
+    }
     auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
     std::cout << "Your solved sudoku:\n";
     b.show();
