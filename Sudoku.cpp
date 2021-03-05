@@ -142,6 +142,7 @@ auto main(int argc, char *argv[]) -> int {
 
     std::string in = std::string(argv[1]);
     SudokuBoard b = SudokuBoard(in);
+    std::cout << "\nYour sudoku:\n";
     b.show();
     if (b.current_state_invalid()) {
         std::cout << "input string invalid. exiting.";
@@ -150,7 +151,8 @@ auto main(int argc, char *argv[]) -> int {
     auto start = std::chrono::steady_clock::now();
     b.solve();
     auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
-    std::cout << "solved in " << time << "ms\n";
+    std::cout << "Your solved sudoku:\n";
     b.show();
+    std::cout << "\nsolved in " << time << "ms!\n";
     return 0;
 }
