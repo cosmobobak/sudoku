@@ -149,7 +149,8 @@ auto main(int argc, char *argv[]) -> int {
     }
     auto start = std::chrono::steady_clock::now();
     b.solve();
-    std::cout << "solved in " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << "ms\n";
+    auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+    std::cout << "solved in " << time << "ms\n";
     b.show();
     return 0;
 }
