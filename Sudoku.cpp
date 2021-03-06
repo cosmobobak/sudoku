@@ -4,18 +4,8 @@
 #include <string>
 
 constexpr auto UNASSIGNED = 0;
-constexpr std::array<char, 10> symbols = {
-    '.',
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-};
+constexpr std::array<char, 10> symbols = {'.', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+constexpr std::array<char, 10> valid_tokens = {'-', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
 class SudokuBoard {
     std::array<std::array<int, 9>, 9> state = {0};
@@ -135,36 +125,55 @@ class SudokuBoard {
 };
 
 auto main(int argc, char *argv[]) -> int {
+    // check if we haven't been given any arguments
     if (argc <= 1) {
-        std::cout << "no input string provided. exiting.";
+        std::cout << "no input string provided.";
         return 0;
     }
-    std::array<char, 10> valid_tokens = {'1','2','3','4','5','6','7','8','9','-'};
+    // create a std::string from which the board is initialised
     std::string in = std::string(argv[1]);
+    // verify that all the characters in the string are valid, exit early if not
     if (std::any_of(
         in.begin(), 
         in.end(), 
-        [valid_tokens](char c){ return std::none_of(
+        [](char c){ return std::none_of(
             valid_tokens.begin(),
             valid_tokens.end(),
             [c](char token){ return token == c; }); })) {
-        std::cout << "input string invalid (you may only use digits and dashes in your input). exiting.";
+        std::cout << "input string invalid (you may only use digits and dashes in your input).";
         return 0;
     }
+    // class is created
     SudokuBoard b = SudokuBoard(in);
+
+    // show the user their initial board, to confirm to 
+    // them that they have entered the correct CLI string
     std::cout << "\nYour sudoku:\n";
     b.show();
+
+    // check if the given sudoku is legal as-is, exit early if not
     if (b.current_state_invalid()) {
-        std::cout << "input sudoku invalid (given problem has repeated digits in rows, columns, or squares). exiting.";
+        std::cout << "input sudoku invalid (given problem has repeated digits in rows, columns, or squares).";
         return 0;
     }
-    auto start = std::chrono::steady_clock::now();
+
+    // a timer that tracks how long we take to solve the problem
+    auto start = std::chrono::system_clock::now();
+
+    // solve() both mutates the board to a solved state,
+    // and returns a flag that indicates if it was successful
     bool success = b.solve();
+
+    // if the solve was unsuccessful, then the given sudoku was bad, and we exit early
     if (!success) {
-        std::cout << "overconstrained sudoku (there is no pattern of digits that can validly fill the given sudoku). exiting.";
+        std::cout << "overconstrained sudoku (there is no pattern of digits that can validly fill the given sudoku).";
         return 0;
     }
-    auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+
+    // the time taken to solve
+    auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+
+    // show the solved sudoku and exit
     std::cout << "Your solved sudoku:\n";
     b.show();
     std::cout << "\nsolved in " << time << "ms!\n";
