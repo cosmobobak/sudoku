@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <cassert>
 
 #include "sudokuiterators.hpp"
@@ -40,13 +41,24 @@ class SudokuBoard {
     }
 
     void show() const {
-        for (auto &row : state) {
-            for (auto &num : row) {
-                std::cout << symbols[num] << " ";
+        std::stringstream sb;
+        std::string divider = "├───────┼───────┼───────┤\n";
+        std::string top = "┌───────┬───────┬───────┐\n";
+        std::string bottom = "└───────┴───────┴───────┘\n";
+        sb << "\n";
+        sb << top;
+        for (size_t y = 0; y < 9; y++) {
+            sb << "│ ";
+            for (size_t x = 0; x < 9; x++) {
+                sb << symbols[state[y][x]] << " ";
+                if (x % 3 == 2 && x != 8) sb << "│ ";
             }
-            std::cout << "\n";
+            sb << "│\n";
+            if (y % 3 == 2 && y != 8) sb << divider;
         }
-        std::cout << "\n";
+        sb << bottom;
+
+        std::cout << sb.str();
     }
 
     auto first_unassigned() const -> int {
