@@ -42,5 +42,5 @@ Your solved sudoku:
 │ 3 9 6 │ 7 4 5 │ 2 1 8 │
 └───────┴───────┴───────┘
 
-solved in 2917 microseconds!
+solved in 2917μs!
 ```

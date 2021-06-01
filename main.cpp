@@ -59,6 +59,6 @@ auto main(int argc, char *argv[]) -> int {
     // show the solved sudoku and exit
     std::cout << "\nYour solved sudoku:";
     b.show();
-    std::cout << "\nsolved in " << time << " microseconds!\n";
+    std::cout << "\nsolved in " << time << "μs!\n";
     return 0;
 }
