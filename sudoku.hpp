@@ -43,14 +43,11 @@ class SudokuBoard {
         clear();
         auto slot = Iterator2D<GLOBAL>::begin(state);
         auto end = Iterator2D<GLOBAL>::end(state);
+
         for (const auto& c : in) {
-            if (c != '-') {
-                *slot = c - '0';  // converts char -> int
-            }
-            ++slot;
-            if (slot == end) {
-                break;
-            }
+            *slot = c != '-' ? c - '0' : 0;  // converts char -> int
+
+            if (slot++ == end) break;
         }
     }
 
