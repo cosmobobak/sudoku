@@ -12,9 +12,7 @@ $ git clone https://github.com/cosmobobak/sudoku
 $ cd sudoku
 $ g++ -Ofast -std=c++2a main.cpp -o sudoku_solver
 $ ./sudoku_solver -6------59----1----1--7---26-2--4-3-----5--4--4--1------7--2--62---9-7--3------1-
-
 Your sudoku:
-
 ┌───────┬───────┬───────┐
 │ . 6 . │ . . . │ . . 5 │
 │ 9 . . │ . . 1 │ . . . │
@@ -28,8 +26,8 @@ Your sudoku:
 │ 2 . . │ . 9 . │ 7 . . │
 │ 3 . . │ . . . │ . 1 . │
 └───────┴───────┴───────┘
-Your solved sudoku:
 
+Your solved sudoku:
 ┌───────┬───────┬───────┐
 │ 7 6 3 │ 4 2 9 │ 1 8 5 │
 │ 9 2 8 │ 5 6 1 │ 3 7 4 │
@@ -44,5 +42,5 @@ Your solved sudoku:
 │ 3 9 6 │ 7 4 5 │ 2 1 8 │
 └───────┴───────┴───────┘
 
-solved in 4ms!
+solved in 2917 microseconds!
 ```
