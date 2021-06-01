@@ -55,7 +55,11 @@ class Iterator2D {
     }
 
     Iterator2D(Iterator2D const&) = default;
-    Iterator2D& operator=(Iterator2D other);
+    Iterator2D& operator=(Iterator2D other) {
+        std::swap(x, other.x);
+        std::swap(y, other.y);
+        return *this;
+    }
 
     // consider specialising to return pointers if we get a ROW.
     static constexpr auto begin(matrix_pointer const target, int n = 0) {
