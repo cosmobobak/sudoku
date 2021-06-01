@@ -4,62 +4,98 @@
 #include <iostream>
 #include <string>
 
-template <int ROW_COL_BOX>
+template <int ROW_COL_BOX_GLOBAL>
 class Iterator2D {
    private:
-    const std::array<std::array<int, 9>, 9>& target;
+    using matrix_pointer = std::array<std::array<int, 9>, 9>*;
+    using matrix = std::array<std::array<int, 9>, 9>;
+
     int x, y;
+    matrix_pointer const target;
 
    public:
     static constexpr auto ROW = 0;
     static constexpr auto COL = 1;
     static constexpr auto BOX = 2;
+    static constexpr auto GLOBAL = 3;
+
     static constexpr auto END = 9;
+    static constexpr auto GLOBAL_END = 81;
 
-    static constexpr auto IS_ROW = ROW_COL_BOX == ROW;
-    static constexpr auto IS_COL = ROW_COL_BOX == COL;
-    static constexpr auto IS_BOX = ROW_COL_BOX == BOX;
+    static constexpr auto IS_ROW = ROW_COL_BOX_GLOBAL == ROW;
+    static constexpr auto IS_COL = ROW_COL_BOX_GLOBAL == COL;
+    static constexpr auto IS_BOX = ROW_COL_BOX_GLOBAL == BOX;
+    static constexpr auto IS_GLOBAL = ROW_COL_BOX_GLOBAL == GLOBAL;
 
-    using iterator_category = std::input_iterator_tag;
+    using iterator_category = std::bidirectional_iterator_tag;
     using difference_type = std::ptrdiff_t;
     using value_type = int;
-    using pointer = int*;    // or also value_type*
-    using reference = int&;  // or also value_type&
+    using pointer = value_type*;  
+    using reference = value_type&;
 
-    Iterator2D(const std::array<std::array<int, 9>, 9>& t, int n) : target(t) {
+    Iterator2D(matrix_pointer t, int n = 0) : target(t) {
         if constexpr (IS_ROW) {
             this->x = 0;
             this->y = n / 9;
         } else if (IS_COL) {
             this->x = n % 9;
             this->y = 0;
-        } else {
+        } else if (IS_BOX) {
             this->x = ((n % 9) / 3) * 3;
             this->y = ((n / 9) / 3) * 3;
+        } else {
+            this->x = n % 9;
+            this->y = n / 9;
         }
     }
 
-    Iterator2D(const std::array<std::array<int, 9>, 9>& t, int x, int y, int progress) : target(t) {
+    Iterator2D(matrix_pointer const t, int x, int y) : target(t) {
         this->x = x;
         this->y = y;
     }
 
-    static inline auto begin(const std::array<std::array<int, 9>, 9>& target, int n) {
+    // consider specialising to return pointers if we get a ROW.
+    static constexpr auto begin(matrix_pointer const target, int n = 0) {
         return Iterator2D(target, n);
     }
 
-    static inline auto end(const std::array<std::array<int, 9>, 9>& target, int n) {
+    // consider specialising to return pointers if we get a ROW.
+    static constexpr auto begin(matrix& target_reference, int n = 0) {
+        return Iterator2D(&target_reference, n);
+    }
+
+    // consider specialising to return pointers if we get a ROW.
+    static constexpr auto end(matrix_pointer const target, int n = 0) {
         if constexpr (IS_ROW) {
-            return Iterator2D(target, END, n / 9, END);
+            return Iterator2D(target, END, n / 9);
         } else if (IS_COL) {
-            return Iterator2D(target, n % 9, END, END);
+            return Iterator2D(target, n % 9, END);
+        } else if (IS_BOX) {
+            return Iterator2D(target, ((n % 9) / 3) * 3, ((n / 9) / 3) * 3 + 3);
         } else {
-            return Iterator2D(target, ((n % 9) / 3) * 3, ((n / 9) / 3) * 3 + 3, END);
+            return Iterator2D(target, 0, END);
         }
     }
 
-    inline auto operator*() const -> const int& {
-        return target[y][x];
+    // consider specialising to return pointers if we get a ROW.
+    static constexpr auto end(matrix& target_reference, int n = 0) {
+        if constexpr (IS_ROW) {
+            return Iterator2D(&target_reference, END, n / 9);
+        } else if (IS_COL) {
+            return Iterator2D(&target_reference, n % 9, END);
+        } else if (IS_BOX) {
+            return Iterator2D(&target_reference, ((n % 9) / 3) * 3, ((n / 9) / 3) * 3 + 3);
+        } else {
+            return Iterator2D(&target_reference, 0, END);
+        }
+    }
+
+    auto operator*() -> int& {
+        return (*target)[y][x];
+    }
+
+    operator int() const {
+        return x + y * 9;
     }
 
     // Prefix increment
@@ -69,7 +105,7 @@ class Iterator2D {
             ++x;
         } else if (IS_COL) {
             ++y;
-        } else {
+        } else if (IS_BOX) {
             // this hack saves us ~2ms of computation for a hard sudoku.
             constexpr uint64_t c = 1 + UINT64_C(0xffffffffffffffff) / 3;
             if (((uint32_t)x + 1) * c <= c - 1) {
@@ -78,8 +114,15 @@ class Iterator2D {
             } else {
                 ++x;
             }
+        } else {
+            if (x == 8) {
+                x = 0;
+                ++y;
+            } else {
+                ++x;
+            }
         }
-        
+
         return *this;
     }
 
@@ -90,13 +133,50 @@ class Iterator2D {
         return tmp;
     }
 
-    friend bool operator==(const Iterator2D& a, const Iterator2D& b) { 
+    // Prefix decrement
+    inline Iterator2D& operator--() {
+        // std::cout << "I am an iterator at x: " << x << " y: " << y << " and my progress is " << progress << "\n";
+        if constexpr (IS_ROW) {
+            --x;
+        } else if (IS_COL) {
+            --y;
+        } else if (IS_BOX) {
+            // this hack saves us ~2ms of computation for a hard sudoku.
+            constexpr uint64_t c = 1 + UINT64_C(0xffffffffffffffff) / 3;
+            if (((uint32_t)x) * c <= c - 1) {
+                --y;
+                x += 2;
+            } else {
+                --x;
+            }
+        } else {
+            if (x == 0) {
+                x = 8;
+                --y;
+            } else {
+                --x;
+            }
+        }
+
+        return *this;
+    }
+
+    // Postfix decrement
+    inline Iterator2D operator--(int) {
+        Iterator2D tmp = *this;
+        --(*this);
+        return tmp;
+    }
+
+    friend bool operator==(const Iterator2D& a, const Iterator2D& b) {
         if constexpr (IS_ROW) {
             return a.x == b.x;
         } else if (IS_COL) {
             return a.y == b.y;
+        } else if (IS_BOX) {
+            return a.y == b.y;
         } else {
-            return a.y == b.y; 
+            return a.y == b.y && a.x == b.x;
         }
     };
 
@@ -104,12 +184,12 @@ class Iterator2D {
         // std::cout << a.x << " " << a.y << " != " << b.x << " " << b.y << " ?\n";
         if constexpr (IS_ROW) {
             return a.x != b.x;
-        }
-        else if (IS_COL) {
+        } else if (IS_COL) {
             return a.y != b.y;
-        }
-        else {
+        } else if (IS_BOX) {
             return a.y != b.y;
+        } else {
+            return a.y != b.y || a.x != b.x;
         }
     };
 };

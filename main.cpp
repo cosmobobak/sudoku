@@ -25,12 +25,12 @@ auto main(int argc, char *argv[]) -> int {
         std::cout << "input string invalid (you may only use digits and dashes in your input).\n";
         return 0;
     }
-    // object is created
+    // object is created.
     SudokuBoard b = SudokuBoard(in);
 
     // show the user their initial board, to confirm to
     // them that they have entered the correct CLI string
-    std::cout << "\nYour sudoku:\n";
+    std::cout << "Your sudoku:";
     b.show();
 
     // check if the given sudoku is legal as-is, exit early if not
@@ -44,7 +44,7 @@ auto main(int argc, char *argv[]) -> int {
 
     // solve() both mutates the board to a solved state,
     // and returns a flag that indicates if it was successful
-    bool success = b.solve();
+    bool success = b.solve_dfs();
 
     // if the solve was unsuccessful, then the given sudoku was bad, and we exit early
     if (!success) {
@@ -53,11 +53,12 @@ auto main(int argc, char *argv[]) -> int {
     }
 
     // the time taken to solve
-    auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+    auto end = std::chrono::system_clock::now();
+    auto time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
     // show the solved sudoku and exit
-    std::cout << "Your solved sudoku:\n";
+    std::cout << "\nYour solved sudoku:";
     b.show();
-    std::cout << "\nsolved in " << time << "ms!\n";
+    std::cout << "\nsolved in " << time << " microseconds!\n";
     return 0;
 }
