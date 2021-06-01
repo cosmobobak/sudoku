@@ -54,6 +54,9 @@ class Iterator2D {
         this->y = y;
     }
 
+    Iterator2D(Iterator2D const&) = default;
+    Iterator2D& operator=(Iterator2D other);
+
     // consider specialising to return pointers if we get a ROW.
     static constexpr auto begin(matrix_pointer const target, int n = 0) {
         return Iterator2D(target, n);
