@@ -28,11 +28,11 @@ int main() {
         driver.set_state(line);
         driver.solve_dfs();
 
-
         if (answer.compare(driver.to_string()) == 0) {
             std::cout << line << " PASS\n";
         } else {
-            std::cout << "\n" << line << "\n";
+            std::cout << "\n"
+                      << line << "\n";
             std::cout << answer << "\n";
             std::cout << driver.to_string() << "\n";
             std::cerr << "FAIL\n";

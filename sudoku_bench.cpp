@@ -1,9 +1,9 @@
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <iostream>
-#include <iomanip>
 
 #include "sudoku.hpp"
 

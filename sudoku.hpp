@@ -6,7 +6,6 @@
 #include <iterator>
 #include <sstream>
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include "dlxnode.hpp"
@@ -39,12 +38,12 @@ class SudokuBoard {
             0);
     }
 
-    void set_state(const std::string& in) {
+    void set_state(const std::string &in) {
         clear();
         auto slot = Iterator2D<GLOBAL>::begin(state);
         auto end = Iterator2D<GLOBAL>::end(state);
 
-        for (const auto& c : in) {
+        for (const auto &c : in) {
             *slot = c != '-' ? c - '0' : 0;  // converts char -> int
 
             if (slot++ == end) break;
@@ -58,8 +57,8 @@ class SudokuBoard {
         std::for_each(
             Iterator2D<GLOBAL>::begin(state),
             Iterator2D<GLOBAL>::end(state),
-            [&out, &idx](int val) { 
-                out[idx++] = val ? '0' + val : '-'; 
+            [&out, &idx](int val) {
+                out[idx++] = val ? '0' + val : '-';
             });
         return out;
     }
