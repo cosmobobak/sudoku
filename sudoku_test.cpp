@@ -9,8 +9,8 @@
 
 int main() {
     // Create an input filestream
-    std::ifstream sudokus("sudokus.txt");
-    std::ifstream answers("answers.txt");
+    std::ifstream sudokus("test_set.txt");
+    std::ifstream answers("answer_set.txt");
 
     // Make sure the file is open
     if (!sudokus.is_open()) throw std::runtime_error("Could not open file");

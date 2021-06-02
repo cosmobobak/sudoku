@@ -9,7 +9,7 @@
 
 int main() {
     // Create an input filestream
-    std::ifstream sudokus("sudokus.txt");
+    std::ifstream sudokus("benchmark_set.txt");
 
     // Make sure the file is open
     if (!sudokus.is_open()) throw std::runtime_error("Could not open file");
@@ -22,7 +22,12 @@ int main() {
     std::string line;
     // Read data, line by line
     while (std::getline(sudokus, line)) {
-        line.pop_back();
+        line.resize(81);
+        std::for_each(line.begin(), line.end(), [](auto& c){ 
+            if (c == '.') {
+                c = '-';
+            }
+        });
         driver.set_state(line);
 
         auto start = std::chrono::system_clock::now();
@@ -41,10 +46,10 @@ int main() {
             easiest_sudoku = line;
         }
 
-        std::cout << line << " solved in " << std::right << std::setw(5) << time << "μs." << std::endl;
+        std::cout << line << " solved in " << std::right << std::setw(6) << time << "μs." << std::endl;
     }
     std::cout << std::endl;
-    std::cout << "hardest sudoku " << hardest_sudoku << " took " << std::right << std::setw(5) << max_time << "μs." << std::endl;
-    std::cout << "easiest sudoku " << easiest_sudoku << " took " << std::right << std::setw(5) << min_time << "μs." << std::endl;
+    std::cout << "hardest sudoku " << hardest_sudoku << " took " << std::right << std::setw(6) << max_time << "μs." << std::endl;
+    std::cout << "easiest sudoku " << easiest_sudoku << " took " << std::right << std::setw(6) << min_time << "μs." << std::endl;
     return 0;
 }
