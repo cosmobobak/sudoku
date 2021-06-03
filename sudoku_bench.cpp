@@ -7,7 +7,11 @@
 
 #include "sudoku.hpp"
 
-int main() {
+int main(int argc, char* argv[]) {
+    int max_sudokus_processed = 100;
+    if (argc > 1) {
+        max_sudokus_processed = atoi(argv[1]);
+    }
     // Create an input filestream
     std::ifstream sudokus("benchmark_set.txt");
 
@@ -21,6 +25,7 @@ int main() {
 
     std::string line;
     // Read data, line by line
+    int count = 0;
     while (std::getline(sudokus, line)) {
         line.resize(81);
         std::for_each(line.begin(), line.end(), [](auto& c){ 
@@ -46,7 +51,9 @@ int main() {
             easiest_sudoku = line;
         }
 
+        std::cout << std::right << std::setprecision(2) << ((double)count / (double)max_sudokus_processed * 100.0) << "% done.\r";
         std::cout << line << " solved in " << std::right << std::setw(6) << time << "μs." << std::endl;
+        if (count++ == max_sudokus_processed) break;
     }
     std::cout << std::endl;
     std::cout << "hardest sudoku " << hardest_sudoku << " took " << std::right << std::setw(6) << max_time << "μs." << std::endl;

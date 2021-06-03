@@ -11,11 +11,11 @@ test:
 
 bench:
 	g++ -std=c++2a -Ofast -Wall -Wextra -Werror -Wpedantic sudoku_bench.cpp -o bench
-	./bench
+	./bench 10000
 
 graph_bench:
 	g++ -std=c++2a -pg -Wall -Wextra -Werror -Wpedantic sudoku_bench.cpp -o graph_bench
-	./graph_bench
+	./graph_bench 20
 	gprof ./graph_bench | gprof2dot -s | dot -Tpng -o graph_bench.png
 
 clean:
