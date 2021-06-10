@@ -1,3 +1,4 @@
+#include <cassert>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -12,6 +13,9 @@ int main(int argc, char* argv[]) {
     if (argc > 1) {
         max_sudokus_processed = atoi(argv[1]);
     }
+
+    assert(max_sudokus_processed > 0);
+    
     // Create an input filestream
     std::ifstream sudokus("benchmark_set.txt");
 
