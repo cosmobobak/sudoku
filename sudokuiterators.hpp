@@ -170,7 +170,7 @@ class Iterator2D {
 
     // Postfix decrement
     inline Iterator2D operator--(int) {
-        Iterator2D tmp = *this;
+        auto tmp = *this;
         --(*this);
         return tmp;
     }
