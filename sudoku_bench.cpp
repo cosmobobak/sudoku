@@ -7,28 +7,18 @@
 #include <vector>
 
 #include "sudoku.hpp"
+#include "fastfile.hpp"
 
-const std::string BENCHMARK_FILENAME = "benchmark_set.txt";
-
-auto file_line_count(std::string filename) -> int {
-    std::ifstream file(filename);
-    int line_count = 0;
-    std::string line;
-    while (std::getline(file, line)) {
-        ++line_count;
-    }
-    return line_count;
-}
+const char* BENCHMARK_FILENAME = "benchmark_set.txt";
 
 int main(int argc, char* argv[]) {
-    int max_sudokus_processed = 100;
+    int max_sudokus_processed = fast_count_lines(BENCHMARK_FILENAME) - 1;
+    
     if (argc > 1) {
         max_sudokus_processed = atoi(argv[1]);
     }
 
     assert(max_sudokus_processed > 0);
-    
-    max_sudokus_processed = file_line_count(BENCHMARK_FILENAME) - 1;
 
     // Create an input filestream
     std::ifstream sudokus(BENCHMARK_FILENAME);
@@ -42,19 +32,14 @@ int main(int argc, char* argv[]) {
     long long min_time = std::numeric_limits<long long>::max(), max_time = 0;
 
     std::string line;
+    line.resize(81);
     // Read data, line by line
     int count = 0;
     while (std::getline(sudokus, line)) {
         printf("%d out of %d\r", count, max_sudokus_processed);
         fflush(stdout);
 
-        line.resize(81);
-        line.replace(0, 1, " ");
-        std::for_each(line.begin(), line.end(), [](auto& c){ 
-            if (c == '.') {
-                c = '-';
-            }
-        });
+        std::replace(line.begin(), line.end(), '.', '-');
         driver.set_state(line);
 
         auto start = std::chrono::system_clock::now();
@@ -75,7 +60,8 @@ int main(int argc, char* argv[]) {
 
         // std::cout << std::right << std::setprecision(2) << ((double)count / (double)max_sudokus_processed * 100.0) << "% done.\r";
         // std::cout << line << " solved in " << std::right << std::setw(6) << time << "μs." << std::endl;
-        if (count++ == max_sudokus_processed) break;
+        if (count == max_sudokus_processed) break;
+        count++;
     }
     printf("%d out of %d\n", count, max_sudokus_processed);
     std::cout << std::endl;
