@@ -7,8 +7,8 @@
 template <int ROW_COL_BOX_GLOBAL>
 class Iterator2D {
    private:
-    using matrix_pointer = std::array<std::array<int, 9>, 9>*;
     using matrix = std::array<std::array<int, 9>, 9>;
+    using matrix_pointer = matrix*;
 
     int x, y;
     matrix_pointer const target;
