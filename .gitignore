@@ -31,3 +31,4 @@
 *.out
 *.app
 benchmark_set.txt
+test
