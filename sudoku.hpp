@@ -7,16 +7,15 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <ranges>
 
 #include "dlxnode.hpp"
 #include "sudokuiterators.hpp"
 
+using enum RangeType;
+
 class SudokuBoard {
     static constexpr auto UNASSIGNED = 0;
-    static constexpr auto ROW = 0;
-    static constexpr auto COL = 1;
-    static constexpr auto BOX = 2;
-    static constexpr auto GLOBAL = 3;
     static constexpr std::array<char, 10> symbols = {'.', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     static constexpr std::array<char, 10> valid_tokens = {'-', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
@@ -27,39 +26,40 @@ class SudokuBoard {
         clear();
     }
 
-    SudokuBoard(const std::string &in) {
+    template <typename CharContainer>
+    SudokuBoard(const CharContainer& in) {
         set_state(in);
     }
 
+    // begin iterator
+    auto begin() -> Iterator2D<GLOBAL> {
+        return Iterator2D<GLOBAL>::begin(state);
+    }
+
+    // end iterator
+    auto end() -> Iterator2D<GLOBAL> {
+        return Iterator2D<GLOBAL>::end(state);
+    }
+
     void clear() {
-        std::fill(
-            Iterator2D<GLOBAL>::begin(state),
-            Iterator2D<GLOBAL>::end(state),
-            0);
+        std::fill(begin(), end(), 0);
     }
 
-    void set_state(const std::string &in) {
-        clear();
-        auto slot = Iterator2D<GLOBAL>::begin(state);
-        auto end = Iterator2D<GLOBAL>::end(state);
-
-        for (const auto &c : in) {
-            *slot = c != '-' ? c - '0' : 0;  // converts char -> int
-
-            if (slot++ == end) break;
-        }
+    template <typename CharContainer>
+    void set_state(const CharContainer& in) {
+        auto chars = std::views::take(in, 81);
+        std::transform(
+            chars.begin(),
+            chars.end(), 
+            begin(),
+            [](char c) { return c != '-' ? c - '0' : 0; });
     }
 
-    auto to_string() {
+    auto to_string() -> std::string {
         std::string out;
-        out.resize(81);
-        int idx = 0;
-        std::for_each(
-            Iterator2D<GLOBAL>::begin(state),
-            Iterator2D<GLOBAL>::end(state),
-            [&out, &idx](int val) {
-                out[idx++] = val ? '0' + val : '-';
-            });
+        std::transform(begin(), end(), std::back_inserter(out), [](int val) {
+            return val ? '0' + val : '-';
+        });
         return out;
     }
 
@@ -103,7 +103,7 @@ class SudokuBoard {
     }
 
     auto transpose() {
-        std::reverse(Iterator2D<GLOBAL>::begin(state), Iterator2D<GLOBAL>::end(state));
+        std::reverse(begin(), end());
     }
 
     auto get_num_at_position(int x) const -> int {
@@ -133,23 +133,23 @@ class SudokuBoard {
         return false;
     }
 
-    auto legal(const Iterator2D<GLOBAL> &test_position, int num) -> bool {
+    auto legal(const Iterator2D<GLOBAL> &test_idx, int num) -> bool {
         return std::all_of(
-                   Iterator2D<ROW>::begin(state, test_position),
-                   Iterator2D<ROW>::end(state, test_position),
+                   Iterator2D<ROW>::begin(state, test_idx),
+                   Iterator2D<ROW>::end(state, test_idx),
                    [num](int n) { return n != num; }) &&
                std::all_of(
-                   Iterator2D<COL>::begin(state, test_position),
-                   Iterator2D<COL>::end(state, test_position),
+                   Iterator2D<COL>::begin(state, test_idx),
+                   Iterator2D<COL>::end(state, test_idx),
                    [num](int n) { return n != num; }) &&
                std::all_of(
-                   Iterator2D<BOX>::begin(state, test_position),
-                   Iterator2D<BOX>::end(state, test_position),
+                   Iterator2D<BOX>::begin(state, test_idx),
+                   Iterator2D<BOX>::end(state, test_idx),
                    [num](int n) { return n != num; });
     }
 
     auto search_dfs(Iterator2D<GLOBAL> last_zero_pos) -> bool {
-        auto end_pos = Iterator2D<GLOBAL>::end(state);
+        auto end_pos = end();
         auto zero_pos = std::find(last_zero_pos, end_pos, 0);
 
         // If there is no unassigned location, we are done
@@ -157,7 +157,7 @@ class SudokuBoard {
             return true;  // success!
         }
 
-        for (int num = 1; num <= 9; num++) {
+        for (int num = 1; num <= 9; ++num) {
             if (legal(zero_pos, num)) {
                 *zero_pos = num;
                 if (search_dfs(zero_pos)) {
@@ -170,60 +170,57 @@ class SudokuBoard {
     }
 
     auto solve_dfs() -> bool {
-        auto start = Iterator2D<GLOBAL>::begin(state);
-        auto middle = Iterator2D<GLOBAL>::begin(state);
-        std::advance(middle, 41);
-        auto end = Iterator2D<GLOBAL>::end(state);
+        auto start_it = begin();
+        auto middle_it = begin();
+        std::advance(middle_it, 41);
+        auto end_it = end();
 
-        auto topcount = std::count_if(start, middle, [](int x) { return x != 0; });
-        auto bottomcount = std::count_if(middle, end, [](int x) { return x != 0; });
+        auto t_count = std::count_if(start_it, middle_it, std::identity{});
+        auto b_count = std::count_if(middle_it, end_it, std::identity{});
 
-        bool transposed = false;
-        if (bottomcount > topcount) {
+        bool transposed = b_count > t_count;
+        if (transposed) {
             transpose();
-            transposed = true;
         }
-        auto result = search_dfs(Iterator2D<GLOBAL>::begin(state));
+        auto result = search_dfs(begin());
         if (transposed) {
             transpose();
         }
         return result;
     }
 
-    // auto dlx_search(DLX::Column* h, int k, list s) {
-    //     if (h->r == h) {
-    //         // print_solution( s );
-    //         return;
-    //     }
+    auto fill_trivial_solutions() -> bool {
+        // apply simple logical fill-ins of squares
+        // i.e. if a square can only have one number, fill it with that number.
+        // this is a preprocessing step to reduce the search space.
+        auto start = begin();
+        auto sent = end();
+        auto change_made = false;
+        for (auto it = start; it != sent; ++it) {
+            if (*it) {
+                continue;
+            }
+            int count = 0;
+            int num;
+            for (int attempt = 1; attempt <= 9 && count < 2; ++attempt) {
+                if (legal(it, attempt)) {
+                    ++count;
+                    num = attempt;
+                }
+            }
+            if (count == 1) {
+                *it = num;
+                change_made = true;
+            }
+        }
+        // return whether we mutated the board at all
+        return change_made;
+    }
 
-    //     auto c = choose_column_object(h);
-    //     auto r = D[c];
-    //     while (r != c) {
-    //         s = s + [r];
-    //         auto j = R[r];
-    //         while (j != r) {
-    //             cover(C[j]);
-    //             j = R[j];
-    //         }
-    //         dlx_search(h, k + 1, s);
-    //         // Pop data object
-    //         r = sk;
-    //         c = C[r];
-    //         j = L[r];
-    //         while (j != r) {
-    //             uncover(C[j]);
-    //             j = L[j];
-    //         }
-    //         r = D[r];
-    //     }
-    //     uncover(c);
-    //     return;
-    // }
+    auto solve_preproc_dfs() -> bool {
+        while (fill_trivial_solutions());
 
-    // auto solve_dlx() {
-    //     auto size = 1;
-    //     // ALL THE NODES GO IN HERE
-    //     auto nodes = std::vector<DLX::Node>(size);
-
-    // }
+        // drop into dfs
+        return solve_dfs();
+    }
 };
