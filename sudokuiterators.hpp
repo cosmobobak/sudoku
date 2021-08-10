@@ -4,7 +4,14 @@
 #include <iostream>
 #include <string>
 
-template <int ROW_COL_BOX_GLOBAL>
+enum class RangeType {
+    ROW = 0,
+    COL = 1,
+    BOX = 2,
+    GLOBAL = 3,
+};
+
+template <RangeType ROW_COL_BOX_GLOBAL>
 class Iterator2D {
    private:
     using matrix = std::array<std::array<int, 9>, 9>;
@@ -14,18 +21,14 @@ class Iterator2D {
     matrix_pointer const target;
 
    public:
-    static constexpr auto ROW = 0;
-    static constexpr auto COL = 1;
-    static constexpr auto BOX = 2;
-    static constexpr auto GLOBAL = 3;
-
+    
     static constexpr auto END = 9;
     static constexpr auto GLOBAL_END = 81;
 
-    static constexpr auto IS_ROW = ROW_COL_BOX_GLOBAL == ROW;
-    static constexpr auto IS_COL = ROW_COL_BOX_GLOBAL == COL;
-    static constexpr auto IS_BOX = ROW_COL_BOX_GLOBAL == BOX;
-    static constexpr auto IS_GLOBAL = ROW_COL_BOX_GLOBAL == GLOBAL;
+    static constexpr auto IS_ROW = ROW_COL_BOX_GLOBAL == RangeType::ROW;
+    static constexpr auto IS_COL = ROW_COL_BOX_GLOBAL == RangeType::COL;
+    static constexpr auto IS_BOX = ROW_COL_BOX_GLOBAL == RangeType::BOX;
+    static constexpr auto IS_GLOBAL = ROW_COL_BOX_GLOBAL == RangeType::GLOBAL;
 
     using iterator_category = std::bidirectional_iterator_tag;
     using difference_type = std::ptrdiff_t;
