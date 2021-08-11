@@ -152,7 +152,7 @@ class Iterator2D {
             --y;
         } else if (IS_BOX) {
             // this hack saves us ~2ms of computation for a hard sudoku.
-            constexpr uint64_t c = 1 + UINT64_C(0xffffffffffffffff) / 3;
+            constexpr uint64_t c = 1 + 0xffffffffffffffffull / 3;
             if (((uint32_t)x) * c <= c - 1) {
                 --y;
                 x += 2;
@@ -181,9 +181,7 @@ class Iterator2D {
     friend bool operator==(const Iterator2D& a, const Iterator2D& b) {
         if constexpr (IS_ROW) {
             return a.x == b.x;
-        } else if (IS_COL) {
-            return a.y == b.y;
-        } else if (IS_BOX) {
+        } else if (IS_COL || IS_BOX) {
             return a.y == b.y;
         } else {
             return a.y == b.y && a.x == b.x;
@@ -194,9 +192,7 @@ class Iterator2D {
         // std::cout << a.x << " " << a.y << " != " << b.x << " " << b.y << " ?\n";
         if constexpr (IS_ROW) {
             return a.x != b.x;
-        } else if (IS_COL) {
-            return a.y != b.y;
-        } else if (IS_BOX) {
+        } else if (IS_COL || IS_BOX) {
             return a.y != b.y;
         } else {
             return a.y != b.y || a.x != b.x;
