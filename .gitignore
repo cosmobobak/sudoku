@@ -30,5 +30,7 @@
 *.exe
 *.out
 *.app
+
 benchmark_set.txt
 test
+graph_bench*
