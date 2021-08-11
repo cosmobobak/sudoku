@@ -5,10 +5,10 @@
 #include <string>
 
 enum class RangeType {
-    ROW = 0,
-    COL = 1,
-    BOX = 2,
-    GLOBAL = 3,
+    ROW,
+    COL,
+    BOX,
+    GLOBAL,
 };
 
 template <RangeType ROW_COL_BOX_GLOBAL>
@@ -59,8 +59,8 @@ class Iterator2D {
 
     Iterator2D(Iterator2D const&) = default;
     Iterator2D& operator=(Iterator2D other) {
-        std::swap(x, other.x);
-        std::swap(y, other.y);
+        x = other.x;
+        y = other.y;
         return *this;
     }
 
