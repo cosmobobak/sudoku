@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
         driver.set_state(line);
 
         auto start = std::chrono::system_clock::now();
-        driver.solve_preproc_dfs();
+        driver.solve();
         auto end = std::chrono::system_clock::now();
 
         auto time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();

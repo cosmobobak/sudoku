@@ -19,7 +19,7 @@ class SudokuBoard {
     static constexpr std::array<char, 10> symbols = {'.', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     static constexpr std::array<char, 10> valid_tokens = {'-', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
-    BaseBoard state;
+    std::array<std::array<int, 9>, 9> state;
 
    public:
     SudokuBoard() {
@@ -41,12 +41,12 @@ class SudokuBoard {
 
     // begin iterator
     auto begin() {
-        return state.begin();
+        return Iterator2D<GLOBAL>::begin(state);
     }
 
     // end iterator
     auto end() {
-        return state.end();
+        return Iterator2D<GLOBAL>::end(state);
     }
 
     void clear() {
@@ -65,7 +65,7 @@ class SudokuBoard {
 
     auto to_string() -> std::string {
         std::stringstream out;
-        for (int i : state) {
+        for (int i : make_range(state)) {
             out << int_to_char(i);
         }
         return out.str(); 
@@ -99,8 +99,7 @@ class SudokuBoard {
         for (size_t y = 0; y < 9; y++) {
             sb << bar;
             for (size_t x = 0; x < 9; x++) {
-                size_t idx = y * 9 + x;
-                sb << symbols[state[idx]] << " ";
+                sb << symbols[ state[y][x] ] << " ";
                 if (x % 3 == 2 && x != 8) sb << bar;
             }
             sb << bar << "\n";
@@ -116,7 +115,7 @@ class SudokuBoard {
     }
 
     auto get_num_at_position(int x) const -> int {
-        return state[x];
+        return state[x / 9][x % 9];
     }
 
     auto current_state_invalid() -> bool {
@@ -142,23 +141,23 @@ class SudokuBoard {
         return false;
     }
 
-    auto legal(int* test_idx, int num) const -> bool {
-        auto itr = state.row_begin(test_idx);
-        auto endr = state.row_end(test_idx);
+    auto legal(const Iterator2D<GLOBAL>& test_idx, int num) -> bool {
+        auto itr = Iterator2D<ROW>::begin(state, test_idx);
+        auto endr = Iterator2D<ROW>::end(state, test_idx);
         for (; itr != endr; ++itr) {
             if (*itr == num) {
                 return false;
             }
         }
-        auto itc = state.col_begin(test_idx);
-        auto endc = state.col_end(test_idx);
+        auto itc = Iterator2D<COL>::begin(state, test_idx);
+        auto endc = Iterator2D<COL>::end(state, test_idx);
         for (; itc != endc; ++itc) {
             if (*itc == num) {
                 return false;
             }
         }
-        auto itb = state.box_begin(test_idx);
-        auto endb = state.box_end(test_idx);
+        auto itb = Iterator2D<BOX>::begin(state, test_idx);
+        auto endb = Iterator2D<BOX>::end(state, test_idx);
         for (; itb != endb; ++itb) {
             if (*itb == num) {
                 return false;
@@ -167,7 +166,7 @@ class SudokuBoard {
         return true;
     }
 
-    auto search_dfs(int* last_zero_pos) -> bool {
+    auto search_dfs(Iterator2D<GLOBAL> last_zero_pos) -> bool {
         auto end_pos = end();
         auto zero_pos = std::find(last_zero_pos, end_pos, 0);
         
@@ -236,7 +235,7 @@ class SudokuBoard {
         return change_made;
     }
 
-    auto solve_preproc_dfs() -> bool {
+    auto solve() -> bool {
         while (fill_trivial_solutions());
 
         // drop into dfs

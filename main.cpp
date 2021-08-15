@@ -44,7 +44,7 @@ auto main(int argc, char *argv[]) -> int {
 
     // solve() both mutates the board to a solved state,
     // and returns a flag that indicates if it was successful
-    bool success = b.solve_dfs();
+    bool success = b.solve();
 
     // if the solve was unsuccessful, then the given sudoku was bad, and we exit early
     if (!success) {
