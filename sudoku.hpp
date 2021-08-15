@@ -19,7 +19,7 @@ class SudokuBoard {
     static constexpr std::array<char, 10> symbols = {'.', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     static constexpr std::array<char, 10> valid_tokens = {'-', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
-    std::array<std::array<int, 9>, 9> state = {0};
+    BaseBoard state;
 
    public:
     SudokuBoard() {
@@ -31,14 +31,22 @@ class SudokuBoard {
         set_state(in);
     }
 
+    static auto int_to_char(int i) {
+        return (char)(i ? '0' + i : '-');
+    }
+
+    static auto char_to_int(char c) {
+        return c != '-' ? c - '0' : 0;
+    }
+
     // begin iterator
-    auto begin() -> Iterator2D<GLOBAL> {
-        return Iterator2D<GLOBAL>::begin(state);
+    auto begin() {
+        return state.begin();
     }
 
     // end iterator
-    auto end() -> Iterator2D<GLOBAL> {
-        return Iterator2D<GLOBAL>::end(state);
+    auto end() {
+        return state.end();
     }
 
     void clear() {
@@ -52,15 +60,15 @@ class SudokuBoard {
             chars.begin(),
             chars.end(), 
             begin(),
-            [](char c) { return c != '-' ? c - '0' : 0; });
+            char_to_int);
     }
 
     auto to_string() -> std::string {
-        std::string out;
-        std::transform(begin(), end(), std::back_inserter(out), [](int val) {
-            return val ? '0' + val : '-';
-        });
-        return out;
+        std::stringstream out;
+        for (int i : state) {
+            out << int_to_char(i);
+        }
+        return out.str(); 
     }
 
     static auto is_string_valid(std::string &str) {
@@ -91,7 +99,8 @@ class SudokuBoard {
         for (size_t y = 0; y < 9; y++) {
             sb << bar;
             for (size_t x = 0; x < 9; x++) {
-                sb << symbols[state[y][x]] << " ";
+                size_t idx = y * 9 + x;
+                sb << symbols[state[idx]] << " ";
                 if (x % 3 == 2 && x != 8) sb << bar;
             }
             sb << bar << "\n";
@@ -107,14 +116,14 @@ class SudokuBoard {
     }
 
     auto get_num_at_position(int x) const -> int {
-        return state[x / 9][x % 9];
+        return state[x];
     }
 
     auto current_state_invalid() -> bool {
         for (
-            auto val = Iterator2D<GLOBAL>::begin(state),
-                 end = Iterator2D<GLOBAL>::end(state);
-            val != end;
+            auto val = begin(),
+                 sentinel = end();
+            val != sentinel;
             ++val) {
             // assign n to the contents of the current index
             auto n = *val;
@@ -133,25 +142,35 @@ class SudokuBoard {
         return false;
     }
 
-    auto legal(const Iterator2D<GLOBAL> &test_idx, int num) -> bool {
-        return std::all_of(
-                   Iterator2D<ROW>::begin(state, test_idx),
-                   Iterator2D<ROW>::end(state, test_idx),
-                   [num](int n) { return n != num; }) &&
-               std::all_of(
-                   Iterator2D<COL>::begin(state, test_idx),
-                   Iterator2D<COL>::end(state, test_idx),
-                   [num](int n) { return n != num; }) &&
-               std::all_of(
-                   Iterator2D<BOX>::begin(state, test_idx),
-                   Iterator2D<BOX>::end(state, test_idx),
-                   [num](int n) { return n != num; });
+    auto legal(int* test_idx, int num) const -> bool {
+        auto itr = state.row_begin(test_idx);
+        auto endr = state.row_end(test_idx);
+        for (; itr != endr; ++itr) {
+            if (*itr == num) {
+                return false;
+            }
+        }
+        auto itc = state.col_begin(test_idx);
+        auto endc = state.col_end(test_idx);
+        for (; itc != endc; ++itc) {
+            if (*itc == num) {
+                return false;
+            }
+        }
+        auto itb = state.box_begin(test_idx);
+        auto endb = state.box_end(test_idx);
+        for (; itb != endb; ++itb) {
+            if (*itb == num) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    auto search_dfs(Iterator2D<GLOBAL> last_zero_pos) -> bool {
+    auto search_dfs(int* last_zero_pos) -> bool {
         auto end_pos = end();
         auto zero_pos = std::find(last_zero_pos, end_pos, 0);
-
+        
         // If there is no unassigned location, we are done
         if (zero_pos == end_pos) {
             return true;  // success!
