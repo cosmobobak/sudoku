@@ -27,6 +27,7 @@ class SudokuBoard {
     }
 
     template <typename CharContainer>
+    requires std::ranges::input_range<CharContainer>
     SudokuBoard(const CharContainer& in) {
         set_state(in);
     }
@@ -54,6 +55,7 @@ class SudokuBoard {
     }
 
     template <typename CharContainer>
+    requires std::ranges::input_range<CharContainer>
     void set_state(const CharContainer& in) {
         auto chars = std::views::take(in, 81);
         std::transform(
