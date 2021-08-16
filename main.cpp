@@ -19,14 +19,14 @@ auto main(int argc, char *argv[]) -> int {
         return 0;
     }
     // create a std::string from which the board is initialised
-    std::string in = std::string(argv[1]);
+    auto in = std::string(argv[1]);
     // verify that all the characters in the string are valid, exit early if not
     if (!SudokuBoard::is_string_valid(in)) {
         std::cout << "input string invalid (you may only use digits and dashes in your input).\n";
         return 0;
     }
     // object is created.
-    SudokuBoard b = SudokuBoard(in);
+    auto b = SudokuBoard(in);
 
     // show the user their initial board, to confirm to
     // them that they have entered the correct CLI string

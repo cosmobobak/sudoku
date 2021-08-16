@@ -14,6 +14,9 @@
 
 using enum RangeType;
 
+template <typename Range>
+concept InputCharRange = std::ranges::input_range<Range> && std::convertible_to<char, std::ranges::range_value_t<Range>>;
+
 class SudokuBoard {
     static constexpr auto UNASSIGNED = 0;
     static constexpr std::array<char, 10> symbols = {'.', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
@@ -26,8 +29,7 @@ class SudokuBoard {
         clear();
     }
 
-    template <typename CharContainer>
-    requires std::ranges::input_range<CharContainer>
+    template <InputCharRange CharContainer>
     SudokuBoard(const CharContainer& in) {
         set_state(in);
     }
@@ -54,10 +56,12 @@ class SudokuBoard {
         std::fill(begin(), end(), 0);
     }
 
-    template <typename CharContainer>
-    requires std::ranges::input_range<CharContainer>
+    template <InputCharRange CharContainer>
     void set_state(const CharContainer& in) {
-        auto chars = std::views::take(in, 81);
+        std::array<char, 81> chars;
+        std::fill(chars.begin(), chars.end(), '-');
+        auto slice = std::views::take(in, 81);
+        std::copy(slice.begin(), slice.end(), chars.begin());
         std::transform(
             chars.begin(),
             chars.end(), 
@@ -73,7 +77,8 @@ class SudokuBoard {
         return out.str(); 
     }
 
-    static auto is_string_valid(std::string &str) {
+    template <InputCharRange CharContainer>
+    static auto is_string_valid(const CharContainer& str) {
         // checks for strings of the form "2736-13-12---346"
         return std::all_of(
             str.begin(),
