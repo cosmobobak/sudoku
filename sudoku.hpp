@@ -80,13 +80,9 @@ class SudokuBoard {
     template <InputCharRange CharContainer>
     static auto is_string_valid(const CharContainer& str) {
         // checks for strings of the form "2736-13-12---346"
-        return std::all_of(
-            str.begin(),
-            str.end(),
-            [](char c) { return std::any_of(
-                             valid_tokens.begin(),
-                             valid_tokens.end(),
-                             [c](char token) { return token == c; }); });
+        auto valid = [](char c){ return std::ranges::any_of(
+            valid_tokens, [c](char t) { return t == c; }); };
+        return std::ranges::all_of(str, valid);
     }
 
     void show() const {
