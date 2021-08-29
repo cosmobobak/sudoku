@@ -9,6 +9,9 @@ test:
 	g++-11 -std=c++2a -Ofast -Wall -Wextra -Werror -Wpedantic sudoku_test.cpp -o test
 	./test
 	rm -f test
+	g++-11 -std=c++2a -Ofast -Wall -Wextra -Werror -Wpedantic token_test.cpp -o test
+	./test
+	rm -f test
 
 bench:
 	g++-11 -std=c++2a -Ofast -Wall -Wextra -Werror -Wpedantic sudoku_bench.cpp -o bench
