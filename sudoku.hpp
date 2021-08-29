@@ -72,12 +72,9 @@ class SudokuBoard {
     }
 
     auto to_string() -> std::string {
-        std::stringstream out;
-        // TODO: use a view
-        for (int i : make_range(state)) {
-            out << int_to_char(i);
-        }
-        return out.str(); 
+        using namespace std::ranges;
+        auto char_range = state | views::join | views::transform(int_to_char);
+        return std::string(char_range.begin(), char_range.end());
     }
 
     template <InputCharRange CharContainer>
