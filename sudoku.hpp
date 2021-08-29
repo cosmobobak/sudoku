@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <ranges>
+#include <span>
 
 #include "dlxnode.hpp"
 #include "sudokuiterators.hpp"
@@ -58,19 +59,21 @@ class SudokuBoard {
 
     template <InputCharRange CharContainer>
     void set_state(const CharContainer& in) {
+        using namespace std::ranges;
         std::array<char, 81> chars;
-        std::fill(chars.begin(), chars.end(), '-');
-        auto slice = std::views::take(in, 81);
-        std::copy(slice.begin(), slice.end(), chars.begin());
+        fill(chars, '-');
+        auto slice = views::take(in, 81);
+        copy(slice, chars.begin());
         std::transform(
-            chars.begin(),
-            chars.end(), 
+            chars.begin(), 
+            chars.end(),
             begin(),
             char_to_int);
     }
 
     auto to_string() -> std::string {
         std::stringstream out;
+        // TODO: use a view
         for (int i : make_range(state)) {
             out << int_to_char(i);
         }
