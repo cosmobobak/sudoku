@@ -17,7 +17,7 @@ class Iterator2D {
     using matrix = std::array<std::array<int, 9>, 9>;
     using matrix_pointer = matrix*;
 
-    int x, y;
+    size_t col, row;
     matrix_pointer const target;
 
    public:
@@ -37,29 +37,29 @@ class Iterator2D {
 
     Iterator2D(matrix_pointer t, int n = 0) : target(t) {
         if constexpr (IS_ROW) {
-            this->x = 0;
-            this->y = n / 9;
+            this->col = 0;
+            this->row = n / 9;
         } else if (IS_COL) {
-            this->x = n % 9;
-            this->y = 0;
+            this->col = n % 9;
+            this->row = 0;
         } else if (IS_BOX) {
-            this->x = ((n % 9) / 3) * 3;
-            this->y = ((n / 9) / 3) * 3;
+            this->col = ((n % 9) / 3) * 3;
+            this->row = ((n / 9) / 3) * 3;
         } else {
-            this->x = n % 9;
-            this->y = n / 9;
+            this->col = n % 9;
+            this->row = n / 9;
         }
     }
 
     Iterator2D(matrix_pointer const t, int x, int y) : target(t) {
-        this->x = x;
-        this->y = y;
+        this->col = x;
+        this->row = y;
     }
 
     Iterator2D(Iterator2D const&) = default;
     Iterator2D& operator=(Iterator2D other) {
-        x = other.x;
-        y = other.y;
+        col = other.col;
+        row = other.row;
         return *this;
     }
 
@@ -100,35 +100,35 @@ class Iterator2D {
     }
 
     inline auto operator*() -> int& {
-        return (*target)[y][x];
+        return (*target)[row][col];
     }
 
     operator int() const {
-        return x + y * 9;
+        return col + row * 9;
     }
 
     // Prefix increment
     inline Iterator2D& operator++() {
         // std::cout << "I am an iterator at x: " << x << " y: " << y << " and my progress is " << progress << "\n";
         if constexpr (IS_ROW) {
-            ++x;
+            ++col;
         } else if (IS_COL) {
-            ++y;
+            ++row;
         } else if (IS_BOX) {
             // this hack saves us ~2ms of computation for a hard sudoku.
             constexpr uint64_t c = 1 + UINT64_C(0xffffffffffffffff) / 3;
-            if (((uint32_t)x + 1) * c <= c - 1) {
-                ++y;
-                x -= 2;
+            if (((uint32_t)col + 1) * c <= c - 1) {
+                ++row;
+                col -= 2;
             } else {
-                ++x;
+                ++col;
             }
         } else {
-            if (x == 8) {
-                x = 0;
-                ++y;
+            if (col == 8) {
+                col = 0;
+                ++row;
             } else {
-                ++x;
+                ++col;
             }
         }
 
@@ -146,24 +146,24 @@ class Iterator2D {
     inline Iterator2D& operator--() {
         // std::cout << "I am an iterator at x: " << x << " y: " << y << " and my progress is " << progress << "\n";
         if constexpr (IS_ROW) {
-            --x;
+            --col;
         } else if (IS_COL) {
-            --y;
+            --row;
         } else if (IS_BOX) {
             // this hack saves us ~2ms of computation for a hard sudoku.
             constexpr uint64_t c = 1 + 0xffffffffffffffffull / 3;
-            if (((uint32_t)x) * c <= c - 1) {
-                --y;
-                x += 2;
+            if (((uint32_t)col) * c <= c - 1) {
+                --row;
+                col += 2;
             } else {
-                --x;
+                --col;
             }
         } else {
-            if (x == 0) {
-                x = 8;
-                --y;
+            if (col == 0) {
+                col = 8;
+                --row;
             } else {
-                --x;
+                --col;
             }
         }
 
@@ -179,22 +179,22 @@ class Iterator2D {
 
     friend bool operator==(const Iterator2D& a, const Iterator2D& b) {
         if constexpr (IS_ROW) {
-            return a.x == b.x;
+            return a.col == b.col;
         } else if (IS_COL || IS_BOX) {
-            return a.y == b.y;
+            return a.row == b.row;
         } else {
-            return a.y == b.y && a.x == b.x;
+            return a.row == b.row && a.col == b.col;
         }
     }
 
     friend bool operator!=(const Iterator2D& a, const Iterator2D& b) {
         // std::cout << a.x << " " << a.y << " != " << b.x << " " << b.y << " ?\n";
         if constexpr (IS_ROW) {
-            return a.x != b.x;
+            return a.col != b.col;
         } else if (IS_COL || IS_BOX) {
-            return a.y != b.y;
+            return a.row != b.row;
         } else {
-            return a.y != b.y || a.x != b.x;
+            return a.row != b.row || a.col != b.col;
         }
     }
 };
