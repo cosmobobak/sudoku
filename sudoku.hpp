@@ -215,9 +215,9 @@ class SudokuBoard {
         // i.e. if a square can only have one number, fill it with that number.
         // this is a preprocessing step to reduce the search space.
         auto start = begin();
-        auto sent = end();
+        auto sentinel = end();
         auto change_made = false;
-        for (auto it = start; it != sent; ++it) {
+        for (auto it = start; it != sentinel; ++it) {
             if (*it) {
                 continue;
             }
